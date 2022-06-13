@@ -1,0 +1,38 @@
+version: "3"
+
+services:
+  # frontend:
+  #   image: ghcr.io/flightsafe/frontend/admin:1.6.3
+  #   network_mode: 3000:3000
+  server:
+    image: ghcr.io/flightsafe/server:v0.13.0
+    ports:
+      - 8000:8000
+    depends_on:
+      - migrate
+    volumes:
+      - ./files:/usr/local/app/server/media
+    environment:
+      - HOST=localhost
+      - USER=flightsafe
+      - PASSWORD=flightsafe
+  db:
+    image: postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: flightsafe
+      POSTGRES_PASSWORD: flightsafe
+    volumes:
+      - ./db:/var/lib/postgresql/data
+  migrate:
+    depends_on:
+      - db
+    image: ghcr.io/flightsafe/server:v0.13.0
+    network_mode: "host"
+    command: python3 manage.py migrate
+    environment:
+      - HOST=localhost
+      - USER=flightsafe
+      - PASSWORD=flightsafe
